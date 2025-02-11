@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
-import 'job_posts.dart'; // Import the global job posts list
+import 'job_posts.dart';
 
-class homepage extends StatelessWidget {
+// Track job applications
+Map<int, List<String>> jobApplications = {};
+Map<int, List<String>> acceptedApplicants = {}; // Track accepted users
+
+class Homepage extends StatefulWidget {
+  @override
+  _HomepageState createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,20 +18,28 @@ class homepage extends StatelessWidget {
         backgroundColor: Colors.blue,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.description), label: 'Jobs'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: Icon(Icons.add, color: Colors.white),
+        onPressed: () {
+          // Navigate to job posting page (if needed)
+        },
       ),
       body: SafeArea(
         child: Column(
           children: [
+            // App title
             Container(
               color: Colors.blue,
               padding: EdgeInsets.all(20),
               alignment: Alignment.center,
-              child: Text(
+              child: const Text(
                 'Daily Earn',
                 style: TextStyle(
                   fontSize: 28,
@@ -32,33 +49,36 @@ class homepage extends StatelessWidget {
                 ),
               ),
             ),
+            // Search bar
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search your jobs',
-                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search for jobs...',
+                  prefixIcon: Icon(Icons.search, color: Colors.blue),
                   filled: true,
-                  fillColor: Colors.grey[300],
+                  fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
                   ),
                 ),
               ),
             ),
-            // Display job posts from the global list
+            // Job List
             Expanded(
               child: globalJobPosts.isEmpty
-                  ? Center(child: Text("No job posts yet."))
+                  ? Center(child: Text("No job posts available."))
                   : ListView.builder(
                 padding: EdgeInsets.all(10),
                 itemCount: globalJobPosts.length,
                 itemBuilder: (context, index) {
                   final post = globalJobPosts[index];
+                  bool isAccepted =
+                      acceptedApplicants[index]?.contains("User123") ?? false; // Example user
+
                   return InkWell(
                     onTap: () {
-                      // When the card is tapped, show a dialog with the post details.
                       showDialog(
                         context: context,
                         builder: (BuildContext dialogContext) {
@@ -70,10 +90,8 @@ class homepage extends StatelessWidget {
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Post Title
                                   Text(
                                     post["title"] ?? "",
                                     style: TextStyle(
@@ -82,36 +100,62 @@ class homepage extends StatelessWidget {
                                     ),
                                   ),
                                   SizedBox(height: 10),
-                                  // Post Description
                                   Text(
                                     post["description"] ?? "",
                                     style: TextStyle(fontSize: 16),
                                   ),
                                   SizedBox(height: 10),
-                                  // Number of Workers
-                                  Text(
-                                    "Workers: ${post["workers"] ?? ""}",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.people, color: Colors.blue),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Workers: ${post["workers"] ?? ""}",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.attach_money, color: Colors.green),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Wage: ${post["wage"] ?? "Not specified"}",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   SizedBox(height: 20),
-                                  // Apply Button at the bottom of the box
-                                  ElevatedButton(
+                                  isAccepted
+                                      ? Text(
+                                    "You have been accepted for this job!",
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                      : ElevatedButton(
                                     onPressed: () {
-                                      // Action to perform on apply.
-                                      // For example, close the dialog and show a message.
+                                      setState(() {
+                                        jobApplications[index] ??= [];
+                                        jobApplications[index]!.add("User123"); // Example user
+                                      });
                                       Navigator.of(dialogContext).pop();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content:
-                                        Text("Applied for the job!"),
-                                      ));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text("Applied for the job!"),
+                                        ),
+                                      );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(
-                                          double.infinity, 40), // Full width button
+                                      minimumSize: Size(double.infinity, 40),
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
                                     ),
                                     child: Text("Apply"),
                                   ),
@@ -123,7 +167,11 @@ class homepage extends StatelessWidget {
                       );
                     },
                     child: Card(
-                      color: Colors.grey[300],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      elevation: 3,
+                      color: Colors.white,
                       margin: EdgeInsets.symmetric(vertical: 10),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -135,12 +183,42 @@ class homepage extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.blue[800],
                               ),
                             ),
+                            SizedBox(height: 5),
+                            Text(
+                              post["description"] ?? "",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                            ),
                             SizedBox(height: 10),
-                            Text(post["description"] ?? ""),
-                            SizedBox(height: 10),
-                            Text("Workers: ${post["workers"] ?? ""}"),
+                            Row(
+                              children: [
+                                Icon(Icons.people, color: Colors.blue),
+                                SizedBox(width: 5),
+                                Text(
+                                  "Workers: ${post["workers"] ?? ""}",
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Icon(Icons.attach_money, color: Colors.green),
+                                SizedBox(width: 5),
+                                Text(
+                                  "Wage: ${post["wage"] ?? "Not specified"}",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),

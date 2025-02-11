@@ -1,6 +1,6 @@
 import 'package:de/homepage.dart';
 import 'package:de/provider.dart';
-import 'package:de/seeker.dart';
+//import 'package:de/seeker.dart';
 import 'package:flutter/material.dart';
 
 class cat extends StatelessWidget {
@@ -48,7 +48,7 @@ class cat extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => homepage()),
+                    MaterialPageRoute(builder: (context) => Homepage()),
                   );
                 },
                 child: Text(
@@ -74,7 +74,7 @@ class cat extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => provider()),
+                    MaterialPageRoute(builder: (context) => ProviderPage()),
                   );
                 },
                 child: Text(
